@@ -4,6 +4,9 @@ import (
 	"github.com/shurcooL/github_flavored_markdown"
 	// "github.com/shurcooL/github_flavored_markdown/gfmstyle"
 	"os"
+	"io/fs"
+	"path/filepath"
+	"fmt"
 )
 
 func check(e error) {
@@ -21,11 +24,21 @@ func convertFile() {
 	check(err)
 }
 
-func convertFolder() {
-	convertFile()
-	// for each folder, call ConvertFolder
-}
-
 func main() {
-	convertFolder()
+	err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+			return err
+		}
+		if info.IsDir() {
+			fmt.Printf("visited file or dir: %q\n", path)
+			/// convertFile(path)
+			return nil
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("error walking the path %q: %v\n", ".", err)
+		return
+	}
 }
