@@ -3,10 +3,10 @@ package main
 import (
 	"github.com/shurcooL/github_flavored_markdown"
 	// "github.com/shurcooL/github_flavored_markdown/gfmstyle"
-	"os"
-	"io/fs"
-	"path/filepath"
 	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
 )
 
 func check(e error) {
@@ -26,7 +26,6 @@ func convertFile(path string) {
 }
 
 func main() {
-
 	err := filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
