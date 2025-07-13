@@ -19,4 +19,4 @@ find . -name "index.html" -exec rm  {} \;
 ./site
 ```
 
-Ensure that all index.html files where created and open them in the browser.
+Ensure that all index.html files were created and open them in the browser.
