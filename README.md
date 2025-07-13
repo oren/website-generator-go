@@ -1,7 +1,22 @@
-# website-generator-go
+# Static site generator in Go
+
+Build
+```
+go build -o site
+```
 
 Run
 ```
-go install
-go run .
+./site
 ```
+
+Test
+```
+go build -o site
+cp site test/
+cd test
+find . -name "index.html" -exec rm  {} \;
+./site
+```
+
+Ensure that all index.html files where created and open them in the browser.
