@@ -5,9 +5,41 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 
 	"github.com/gomarkdown/markdown"
 )
+
+const baseURL = "https://oren.github.io"
+
+// convertNavbarURLs converts relative URLs in markdown links to absolute URLs
+func convertNavbarURLs(mdContent string) string {
+	// Match markdown links: [text](url)
+	re := regexp.MustCompile(`\[([^\]]+)\]\(([^)]+)\)`)
+
+	return re.ReplaceAllStringFunc(mdContent, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		if len(parts) != 3 {
+			return match
+		}
+		text := parts[1]
+		url := parts[2]
+
+		// Convert relative URLs to absolute
+		if url == "/" {
+			url = baseURL
+		} else if strings.HasPrefix(url, "/") {
+			// /path -> baseURL/path (remove leading slash since baseURL doesn't have trailing)
+			url = baseURL + url
+		} else if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+			// relative path like "cook/" -> baseURL/cook/
+			url = baseURL + "/" + url
+		}
+
+		return fmt.Sprintf("[%s](%s)", text, url)
+	})
+}
 
 func processDirectory(dir string) {
 	readmePath := filepath.Join(dir, "README.md")
@@ -33,7 +65,9 @@ func processDirectory(dir string) {
 	if _, err := os.Stat(navbarPath); err == nil {
 		navbarMd, err := ioutil.ReadFile(navbarPath)
 		if err == nil {
-			navbarHTML = string(markdown.ToHTML(navbarMd, nil, nil))
+			// Convert relative URLs to absolute URLs
+			navbarMdConverted := convertNavbarURLs(string(navbarMd))
+			navbarHTML = string(markdown.ToHTML([]byte(navbarMdConverted), nil, nil))
 		}
 	}
 
