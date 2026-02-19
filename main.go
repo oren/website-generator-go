@@ -76,6 +76,7 @@ func processDirectory(dir string) {
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>README</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
 <style>
@@ -100,7 +101,7 @@ func processDirectory(dir string) {
 	}
 </style>
 </head>
-<body>
+<body data-color-mode="light" data-light-theme="light">
 %s
 <article class="markdown-body">
 %s
