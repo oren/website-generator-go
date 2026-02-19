@@ -82,6 +82,11 @@ func processDirectory(dir string) {
 <style>
 	body {
 		font-size: 1.5em;
+		background-color: #0d1117;
+		color: #e6edf3;
+	}
+	body > a, body > p a {
+		color: #58a6ff;
 	}
 	.markdown-body {
 		box-sizing: border-box;
@@ -89,8 +94,6 @@ func processDirectory(dir string) {
 		max-width: 980px;
 		margin: 0 auto;
 		padding: 45px;
-		background-color: white;
-		color: #333;
 		font-size: 0.8em;
 	}
 
@@ -101,7 +104,7 @@ func processDirectory(dir string) {
 	}
 </style>
 </head>
-<body data-color-mode="light" data-light-theme="light">
+<body data-color-mode="dark" data-dark-theme="dark">
 %s
 <article class="markdown-body">
 %s
