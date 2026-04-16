@@ -13,6 +13,26 @@ import (
 
 const baseURL = "https://oren.github.io"
 
+// extractTitle returns the text of the first H1 heading in the markdown
+func extractTitle(md string) string {
+	re := regexp.MustCompile(`(?m)^#\s+(.+)$`)
+	matches := re.FindStringSubmatch(md)
+	if len(matches) >= 2 {
+		return strings.TrimSpace(matches[1])
+	}
+	return ""
+}
+
+// extractFirstImage returns the src of the first image in the markdown
+func extractFirstImage(md string) string {
+	re := regexp.MustCompile(`!\[[^\]]*\]\(([^)]+)\)`)
+	matches := re.FindStringSubmatch(md)
+	if len(matches) >= 2 {
+		return strings.TrimSpace(matches[1])
+	}
+	return ""
+}
+
 // convertNavbarURLs converts relative URLs in markdown links to absolute URLs
 func convertNavbarURLs(mdContent string) string {
 	// Match markdown links: [text](url)
@@ -56,6 +76,25 @@ func processDirectory(dir string) {
 		return
 	}
 
+	// Extract title and first image for OG tags
+	mdStr := string(md)
+	title := extractTitle(mdStr)
+	if title == "" {
+		title = "README"
+	}
+
+	ogTags := ""
+	firstImage := extractFirstImage(mdStr)
+	if firstImage != "" && !strings.HasPrefix(firstImage, "http") {
+		dirURL := filepath.ToSlash(dir)
+		if dirURL == "." {
+			dirURL = ""
+		} else {
+			dirURL = "/" + dirURL
+		}
+		ogTags = fmt.Sprintf("<meta property=\"og:title\" content=\"%s\" />\n<meta property=\"og:image\" content=\"%s%s/%s\" />\n<meta property=\"og:type\" content=\"website\" />\n", title, baseURL, dirURL, firstImage)
+	}
+
 	// Convert markdown to HTML
 	html := markdown.ToHTML(md, nil, nil)
 
@@ -77,7 +116,8 @@ func processDirectory(dir string) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>README</title>
+<title>%s</title>
+%s
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
 <style>
 	body {
@@ -110,7 +150,7 @@ func processDirectory(dir string) {
 %s
 </article>
 </body>
-</html>`, navbarHTML, html)
+</html>`, title, ogTags, navbarHTML, html)
 
 	// Write the index.html file
 	indexPath := filepath.Join(dir, "index.html")
@@ -124,18 +164,38 @@ func processDirectory(dir string) {
 }
 
 func main() {
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			processDirectory(path)
-		}
-		return nil
-	})
+	args := os.Args[1:]
 
-	if err != nil {
-		fmt.Println("Error walking through directories:", err)
-		os.Exit(1)
+	if len(args) == 0 {
+		err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				processDirectory(path)
+			}
+			return nil
+		})
+		if err != nil {
+			fmt.Println("Error walking through directories:", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	for _, arg := range args {
+		err := filepath.Walk(arg, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				processDirectory(path)
+			}
+			return nil
+		})
+		if err != nil {
+			fmt.Printf("Error walking %s: %v\n", arg, err)
+			os.Exit(1)
+		}
 	}
 }
